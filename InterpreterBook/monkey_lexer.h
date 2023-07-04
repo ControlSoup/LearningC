@@ -1,12 +1,13 @@
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
 Notes:
     - Max identifier length is 25 characters long
 */
 
-#define MAX_IDENT_LEN 25
+#define MAX_STR_LEN 25
 #define NUM_IDENT 14 
 
 
@@ -51,6 +52,15 @@ typedef struct{
 // ===============================
 
 
+
+int _is_letter(char character){
+    return (('a' <= character && character <= 'z') || ('A' < character && character <= 'Z') || (character == '_'));
+}
+
+int _is_digit(char character){
+    return ('0' <= character && character <= '9');
+}
+
 void lexer_read_char(Lexer* ptr_Lexer){
     // Ensure we are not at the end of the input
     if (ptr_Lexer->read_position >= ptr_Lexer->input_length){
@@ -64,11 +74,45 @@ void lexer_read_char(Lexer* ptr_Lexer){
     ptr_Lexer->read_position += 1;
 }
 
-int _is_letter(char character){
-    return (('a' <= character && character <= 'z') || ('A' < character && character <= 'Z') || (character == '_'));
+char* _lexer_read_digit(Lexer* ptr_Lexer){
+    /*
+        :returns: a string contiaing the current digits 
+    */
+
+    int start = ptr_Lexer->position;
+
+    while (_is_digit(ptr_Lexer->current_char)){
+        lexer_read_char(ptr_Lexer);
+    };
+
+    int end =  ptr_Lexer->position;
+
+    if(end > MAX_STR_LEN){
+        printf("  ERROR| MAX digit or identifier length exeeded\n");
+        exit(0);
+    };
+
+    static char identifier[MAX_STR_LEN];
+
+    // Populate the output with the relavent chars
+    int i = 0;
+    while (i < end-start){
+        identifier[i] = ptr_Lexer->input[start + i];
+        i++;
+    };
+
+    // Ensure last char is an end of string
+    identifier[i] = '\0';
+
+    return identifier;
 }
 
+
 char* _lexer_read_identifier(Lexer* ptr_Lexer){
+    /*
+        :returns: a string contianing the current identifier
+    */
+
     int start = ptr_Lexer->position;
 
     while (_is_letter(ptr_Lexer->current_char)){
@@ -77,19 +121,21 @@ char* _lexer_read_identifier(Lexer* ptr_Lexer){
 
     int end =  ptr_Lexer->position;
 
-    if(end > MAX_IDENT_LEN){
-        printf("  ERROR| MAX Identifier Exceeded\n");
+    if(end > MAX_STR_LEN){
+        printf("  ERROR| MAX digit or identifier length exeeded\n");
         exit(0);
     };
 
-    // !NOTE! max identifier length
-    static char identifier[MAX_IDENT_LEN];
+    static char identifier[MAX_STR_LEN];
 
+    // Populate the output with the relavent chars
     int i = 0;
     while (i < end-start){
         identifier[i] = ptr_Lexer->input[start + i];
         i++;
     };
+
+    // Ensure last char is an end of string
     identifier[i] = '\0';
 
     return identifier;
@@ -106,14 +152,13 @@ void _skip_whitespace(Lexer* ptr_Lexter){
 }
 
 TokenType _ident_token(char* identifier){
-    if (strcmp("fn", identifier) == 0){
-
-        return Token_FUNCTION;
-    } 
+    /*
+        :returns: TokenType that matches known IDENT strings
+    */
+    if (strcmp("fn", identifier) == 0)return Token_FUNCTION;
     else if (strcmp("let", identifier) == 0) return Token_LET;
     else{
         printf("     ERROR| _ident_token() FAILED with IDENT: %s\n", identifier);
-        exit(1);
     }
 }
 
@@ -123,7 +168,9 @@ TokenType _ident_token(char* identifier){
 
 
 Lexer new_lexer(char* input){
-    // Initialize a new lexer
+    /*
+        :returns: Lexer with properly intialized value 
+    */
     Lexer NewLexer = {
         .input = input,
         .input_length = strlen(input),
@@ -139,6 +186,9 @@ Lexer new_lexer(char* input){
 
 
 Token next_token(Lexer* ptr_Lexer){
+    /*
+        :returns: the next Token in the Lexer 
+    */
 
     Token CurrentToken;
 
@@ -182,6 +232,10 @@ Token next_token(Lexer* ptr_Lexer){
             if (_is_letter(ptr_Lexer->current_char)){
                 CurrentToken.literal = _lexer_read_identifier(ptr_Lexer);
                 CurrentToken.Type = _ident_token(CurrentToken.literal); 
+            }
+            else if (_is_digit(ptr_Lexer->current_char)){
+                CurrentToken.literal = _lexer_read_digit(ptr_Lexer);
+                CurrentToken.Type = Token_INT;
             }
             else {
                 CurrentToken.Type = Token_ILLEGAL;
