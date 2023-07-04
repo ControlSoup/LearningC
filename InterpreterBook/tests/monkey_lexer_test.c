@@ -1,16 +1,33 @@
 #include <stdio.h>
 #include "../monkey_lexer.h"
 
-
+#define NUM_TESTS 74 
 
 int main(){
-    char* test_input = "let five = 5;let ten = 10;let add = fn(x, y) {x + y;};let result = add(five,ten);";
+    char* test_input = "let five = 510;\n\
+    let ten = 10;\n\
+    \n\
+    let add = fn(x, y) {\n\
+    x + y;\n\
+    };\n\
+    \n\
+    let result = add(five,ten);\n\
+    !-/*5;\n\
+    5 < 10 > 5;\n\
+    if (5 < 10) {\n\
+        return true;\n\
+    } else {\n\
+        return false;\n\
+    }\n\
+    \n\
+    10 == 10;\n\
+    10 != 9;";
 
-    Token TestCases[] = {
+    Token TestCases[NUM_TESTS] = {
         {Token_LET, "let"},
         {Token_IDENT, "five"},
         {Token_ASSIGN, "="},
-        {Token_INT, "5"},
+        {Token_INT, "510"},
         {Token_SEMICOLON, ";"},
         {Token_LET, "let"},
         {Token_IDENT, "ten"},
@@ -43,6 +60,43 @@ int main(){
         {Token_IDENT, "ten"},
         {Token_RPAREN, ")"},
         {Token_SEMICOLON, ";"},
+        {Token_BANG, "!"},
+        {Token_MINUS, "-"},
+        {Token_FSLASH, "/"},
+        {Token_ASTERISK, "*"},
+        {Token_INT, "5"},
+        {Token_SEMICOLON, ";"},
+        {Token_INT, "5"},
+        {Token_LT, "<"},
+        {Token_INT, "10"},
+        {Token_GT, ">"},
+        {Token_INT, "5"},
+        {Token_SEMICOLON, ";"},
+        {Token_IF, "if"},
+        {Token_LPAREN, "("},
+        {Token_INT, "5"},
+        {Token_LT, "<"},
+        {Token_INT, "10"},
+        {Token_RPAREN, ")"},
+        {Token_LBRACE, "{"},
+        {Token_RETURN, "return"},
+        {Token_TRUE, "true"},
+        {Token_SEMICOLON, ";"},
+        {Token_RBRACE, "}"},
+        {Token_ELSE, "else"},
+        {Token_LBRACE, "{"},
+        {Token_RETURN, "return"},
+        {Token_FALSE, "false"},
+        {Token_SEMICOLON, ";"},
+        {Token_RBRACE, "}"},
+        {Token_INT, "10"},
+        {Token_ISEQUAL, "=="},
+        {Token_INT, "10"},
+        {Token_SEMICOLON, ";"},
+        {Token_INT, "10"},
+        {Token_NOTEQUAL, "!="},
+        {Token_INT, "9"},
+        {Token_SEMICOLON, ";"},
         {Token_EOF, ""},
 };
     
@@ -50,12 +104,12 @@ int main(){
     Token NewToken;
 
     printf("\n");
-    for (int i =0; i<8; i++){
+    for (int i = 0; i < NUM_TESTS; i++){
         NewToken = next_token(&TestLexer); 
         if (
             (NewToken.Type == TestCases[i].Type) &&
             (strcmp(NewToken.literal,TestCases[i].literal) == 0)
-        ) printf("Test #%d Passed\n\n",i);
+        ) printf("Test #%d Passed, with literal [%s]\n\n",i,NewToken.literal);
 
         else {
             printf("Test #%d FAILED!\n",i);
